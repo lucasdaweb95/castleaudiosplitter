@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Splitter</title>
+</head>
+<body>
+    <h1>Upload Audio File to Split into 30-Second Chunks</h1>
+    <form id="audioForm" enctype="multipart/form-data">
+        <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+        <button type="submit">Upload and Split</button>
+    </form>
+
+    <p id="status"></p>
+
+    <script>
+        document.getElementById('audioForm').onsubmit = async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const audioFile = document.getElementById('audioFile').files[0];
+            formData.append('audioFile', audioFile);
+
+            document.getElementById('status').textContent = "Processing...";
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'audio_chunks.zip';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.getElementById('status').textContent = "Download complete!";
+            } else {
+                document.getElementById('status').textContent = "Error processing audio.";
+            }
+        };
+    </script>
+</body>
+</html>
